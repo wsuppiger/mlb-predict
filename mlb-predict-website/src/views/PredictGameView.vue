@@ -1,17 +1,17 @@
 <template>
-  <div class="home">
-    <UpcomingGames />
+  <div class="predict-game">
+    <ChoosePlay />
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import UpcomingGames from '@/components/UpcomingGames.vue'
+import ChoosePlay from '@/components/ChoosePlay.vue'
 
 export default {
   name: 'HomeView',
   components: {
-    UpcomingGames
+    ChoosePlay
   }
 }
 </script>
