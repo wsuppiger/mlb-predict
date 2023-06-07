@@ -8,8 +8,8 @@ const routes = [{
   component: HomeView
 },
 {
-  path: '/predictGame',
-  name: 'predict game',
+  path: '/predict-game/:gamepk',
+  name: 'Predict Game',
   // component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   component: PredictGameView
 }

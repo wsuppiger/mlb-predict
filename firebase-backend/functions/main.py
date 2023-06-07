@@ -3,6 +3,9 @@ from datetime import datetime
 from firebase_admin import firestore, initialize_app
 from firebase_functions import https_fn
 
+# Initialize the Firebase app
+initialize_app()
+
 def extract_mlb_games(date):
     # Generate the MLB games API URL for the specified date
     url = f"https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate={date}&endDate={date}&gameType=R&fields=dates,date,games,gamePk,status,abstractGameState,teams,away,home,team,id,name,gameDate"
@@ -22,9 +25,6 @@ def store_mlb_games(date_str: str) -> None:
 
     # Extract the MLB games data
     games = extract_mlb_games(date)
-
-    # Initialize the Firebase app
-    initialize_app()
 
     # Get a reference to the Firestore database
     db = firestore.client()
@@ -47,9 +47,12 @@ def store_mlb_games(date_str: str) -> None:
     print(f"MLB games data stored in Firestore for date: {date_str}")
 
 @https_fn.on_request()
-def store_mlb_games_endpoint(request) -> None:
+def store_mlb_games_endpoint(request) -> https_fn.Response:
     # Get the date parameter from the request query string
     date_str = request.args.get("date")
     
     # Call the store_mlb_games function with the provided date
     store_mlb_games(date_str)
+
+    return ""
+    

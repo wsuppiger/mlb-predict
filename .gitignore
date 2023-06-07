@@ -1,1 +1,3 @@
 firebase-backend/functions/venv/*
+mlb-predict-website/src/firebase.js
+firebase-backend/functions/__pycache__/*

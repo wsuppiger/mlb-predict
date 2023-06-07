@@ -1,63 +1,100 @@
 <template>
 	<div class="mlb-box">
-		<h2 class="mlb-heading">Upcoming MLB Games</h2>
-		<ul>
-			<li v-for="game in upcomingGames" :key="game.id">
-				<span class="mlb-team" :style="{ backgroundColor: game.homeTeamColor }">{{ game.homeTeam }}</span>
-				vs
-				<span class="mlb-team" :style="{ backgroundColor: game.awayTeamColor }">{{ game.awayTeam }}</span>
-				- {{ game.date }}
+		<h2 class="mlb-heading">Today's MLB Games</h2>
+		<ul class="mlb-games-list">
+			<li v-for="game in upcomingGames" :key="game.gamePk" class="mlb-game">
+				<router-link :to="'/predict-game/' + game.gamePk" class="mlb-game-link">
+					<div class="mlb-game-row">
+						<div class="mlb-team-container">
+							<span class="mlb-team mlb-home-team" :style="{ backgroundColor: getTeamColor(game.homeTeam) }">
+								{{ game.homeTeam }}
+							</span>
+							<span class="mlb-vs">vs</span>
+							<span class="mlb-team mlb-away-team" :style="{ backgroundColor: getTeamColor(game.awayTeam) }">
+								{{ game.awayTeam }}
+							</span>
+						</div>
+						<div class="mlb-game-details">
+							<span class="mlb-game-time">{{ formatTime(game.gameDate) }}</span>
+							<font-awesome-icon icon="chevron-right" />
+						</div>
+					</div>
+				</router-link>
 			</li>
 		</ul>
 	</div>
 </template>
 
 <script>
+import { db } from '@/firebase';
+
 export default {
 	data() {
 		return {
 			upcomingGames: [],
+			teamColors: {
+				'Arizona Diamondbacks': '#A71930',
+				'Atlanta Braves': '#CE1141',
+				'Baltimore Orioles': '#DF4601',
+				'Boston Red Sox': '#BD3039',
+				'Chicago White Sox': '#27251F',
+				'Chicago Cubs': '#0E3386',
+				'Cincinnati Reds': '#C6011F',
+				'Cleveland Guardians': '#0C2340',
+				'Colorado Rockies': '#33006F',
+				'Detroit Tigers': '#0C2340',
+				'Houston Astros': '#002D62',
+				'Kansas City Royals': '#004687',
+				'Los Angeles Angels': '#BA0021',
+				'Los Angeles Dodgers': '#005A9C',
+				'Miami Marlins': '#00A3E0',
+				'Milwaukee Brewers': '#12284B',
+				'Minnesota Twins': '#002B5C',
+				'New York Yankees': '#003087',
+				'New York Mets': '#FF5910',
+				'Oakland Athletics': '#003831',
+				'Philadelphia Phillies': '#E81828',
+				'Pittsburgh Pirates': '#FDB827',
+				'San Diego Padres': '#002D62',
+				'San Francisco Giants': '#FD5A1E',
+				'Seattle Mariners': '#0C2C56',
+				'St. Louis Cardinals': '#C41E3A',
+				'Tampa Bay Rays': '#092C5C',
+				'Texas Rangers': '#C0111F',
+				'Toronto Blue Jays': '#134A8E',
+				'Washington Nationals': '#AB0003',
+			},
 		};
 	},
 	mounted() {
-		// Fetch MLB game data from an API
 		this.fetchUpcomingGames();
 	},
 	methods: {
-		fetchUpcomingGames() {
-			// Make an API call to retrieve the upcoming MLB games
-			// Replace this with your actual API call implementation
-			// For simplicity, let's assume the API returns an array of game objects
-			const apiResponse = [
-				{
-					id: 1,
-					homeTeam: 'New York Yankees',
-					homeTeamColor: '#003087', // Yankees' color
-					awayTeam: 'Boston Red Sox',
-					awayTeamColor: '#BD3039', // Red Sox's color
-					date: '2023-06-07',
-				},
-				{
-					id: 2,
-					homeTeam: 'Los Angeles Dodgers',
-					homeTeamColor: '#005A9C', // Dodgers' color
-					awayTeam: 'San Francisco Giants',
-					awayTeamColor: '#FD5A1E', // Giants' color
-					date: '2023-06-08',
-				},
-				{
-					id: 3,
-					homeTeam: 'Chicago Cubs',
-					homeTeamColor: '#0E3386', // Cubs' color
-					awayTeam: 'St. Louis Cardinals',
-					awayTeamColor: '#C41E3A', // Cardinals' color
-					date: '2023-06-09',
-				},
-				// Add more game objects as needed
-			];
-
-			// Update the upcomingGames array with the API response data
-			this.upcomingGames = apiResponse;
+		async fetchUpcomingGames() {
+			try {
+				const snapshot = await db.collection('mlb_games').get();
+				const games = [];
+				snapshot.forEach((doc) => {
+					const gamesData = doc.data().games;
+					gamesData.forEach((game) => {
+						const { gamePk, gameDate, teams } = game;
+						const homeTeam = teams.home.team.name;
+						const awayTeam = teams.away.team.name;
+						const formattedGame = { gamePk, gameDate, homeTeam, awayTeam };
+						games.push(formattedGame);
+					});
+				});
+				this.upcomingGames = games;
+			} catch (error) {
+				console.error('Error fetching upcoming games:', error);
+			}
+		},
+		formatTime(date) {
+			const gameDate = new Date(date);
+			return gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+		},
+		getTeamColor(team) {
+			return this.teamColors[team] || '#000000'; // Default color if not found in the teamColors object
 		},
 	},
 };
@@ -76,21 +113,80 @@ export default {
 	margin-bottom: 10px;
 }
 
-ul {
-	list-style-type: none;
+.mlb-games-list {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 	padding: 0;
+	list-style-type: none;
+	/* Remove bullet points */
 }
 
-li {
-	margin-bottom: 5px;
+.mlb-game {
+	margin-bottom: 10px;
+	text-align: left;
+}
+
+.mlb-game-link {
+	text-decoration: none;
+	color: #000000;
+}
+
+.mlb-game-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: #F5F5F5;
+	padding: 10px;
+	border-radius: 5px;
+}
+
+.mlb-team-container {
+	display: flex;
+	align-items: center;
 }
 
 .mlb-team {
 	display: inline-block;
-	padding: 2px 5px;
-	color: #FFFFFF;
+	padding: 2px 10px;
+	color: #ffffff;
+	/* Update to white */
 	font-weight: bold;
 	border-radius: 3px;
 	margin-right: 5px;
+}
+
+.mlb-home-team {
+	/* Add home team color */
+}
+
+.mlb-away-team {
+	/* Add away team color */
+}
+
+.mlb-vs {
+	margin: 0 5px;
+	font-weight: bold;
+}
+
+.mlb-game-time {
+	font-size: 14px;
+	white-space: nowrap;
+	margin-left: 10px;
+}
+
+.mlb-game-details {
+	display: flex;
+	align-items: center;
+}
+
+.mlb-predict-button {
+	cursor: pointer;
+}
+
+.mlb-predict-button:focus,
+.mlb-predict-button:active {
+	outline: none;
+	box-shadow: none;
 }
 </style>
