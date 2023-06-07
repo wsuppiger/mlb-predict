@@ -58,7 +58,7 @@ def store_mlb_games_endpoint(request) -> https_fn.Response:
 
     return ""
 
-@scheduler_fn.on_schedule(schedule="every minute")
+@scheduler_fn.on_schedule(schedule="every day 3:00")
 def store_mlb_games_daily(event: scheduler_fn.ScheduledEvent) -> None:
     # Get the current date
     current_date = date.today()
