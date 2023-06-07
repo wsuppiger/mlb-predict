@@ -1,7 +1,9 @@
 import requests
-from datetime import datetime
+from datetime import datetime, date
 from firebase_admin import firestore, initialize_app
-from firebase_functions import https_fn
+from firebase_functions import scheduler_fn, https_fn, options
+
+options.set_global_options(max_instances=10)
 
 # Initialize the Firebase app
 initialize_app()
@@ -50,6 +52,19 @@ def store_mlb_games(date_str: str) -> None:
 def store_mlb_games_endpoint(request) -> https_fn.Response:
     # Get the date parameter from the request query string
     date_str = request.args.get("date")
+    
+    # Call the store_mlb_games function with the provided date
+    store_mlb_games(date_str)
+
+    return ""
+
+@scheduler_fn.on_schedule(schedule="every minute")
+def store_mlb_games_daily(event: scheduler_fn.ScheduledEvent) -> None:
+    # Get the current date
+    current_date = date.today()
+
+    # Convert the date to string format
+    date_str = current_date.strftime("%Y-%m-%d")
     
     # Call the store_mlb_games function with the provided date
     store_mlb_games(date_str)
