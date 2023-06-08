@@ -83,7 +83,9 @@ export default {
 				const today = (new Date()).toLocaleDateString("fr-CA");
 
 				if (snapshot.empty) {
-					// Call the Firebase function to store MLB games for today
+					// Call the Firebase function to store MLB games for local today if not stored yet.
+					// This is only for the case where the local time is a day ahead
+					// of the server's schedule (1am EST local, but 10pm PST server)
 					const storeMlbGamesEndpoint = functions.httpsCallable('store_mlb_games_endpoint');
 					await storeMlbGamesEndpoint({ date: today });
 				}
