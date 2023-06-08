@@ -4,7 +4,7 @@
 		<ul class="mlb-games-list">
 			<li v-for="game in upcomingGames" :key="game.gamePk" class="mlb-game">
 				<router-link :to="'/predict-game/' + game.gamePk" class="mlb-game-link">
-					<div class="mlb-game-row">
+					<div :class="['mlb-game-row', { 'live-game': game.status === 'Live' }]">
 						<div class="mlb-team-container">
 							<span class="mlb-team mlb-home-team" :style="{ backgroundColor: getTeamColor(game.homeTeam) }">
 								{{ game.homeTeam }}
@@ -16,7 +16,7 @@
 						</div>
 						<div class="mlb-game-details">
 							<span class="mlb-game-time">{{ formatTime(game.gameDate) }}</span>
-							<font-awesome-icon icon="chevron-right" />
+							<font-awesome-icon v-if="game.status === 'Live'" icon="chevron-right" class="mlb-icon-spacing" />
 						</div>
 					</div>
 				</router-link>
@@ -80,7 +80,7 @@ export default {
 
 				const snapshot = await db.collection('mlb_games').get();
 				const games = [];
-				const today = (new Date()).toLocaleDateString("fr-CA");
+				const today = new Date().toLocaleDateString("fr-CA");
 
 				if (snapshot.empty) {
 					// Call the Firebase function to store MLB games for local today if not stored yet.
@@ -93,11 +93,7 @@ export default {
 				const updatedSnapshot = await db.collection('mlb_games').get();
 				updatedSnapshot.forEach((doc) => {
 					const gamesData = doc.data().games;
-					gamesData.forEach((game) => {
-						const { gamePk, gameDate, teams } = game;
-						const homeTeam = teams.home.team.name;
-						const awayTeam = teams.away.team.name;
-						const formattedGame = { gamePk, gameDate, homeTeam, awayTeam };
+					gamesData.forEach((formattedGame) => {
 						games.push(formattedGame);
 					});
 				});
@@ -232,5 +228,15 @@ export default {
 	100% {
 		transform: rotate(360deg);
 	}
+}
+
+.live-game {
+	background-color: #FFFFCC;
+	/* Light yellow background for live games */
+}
+
+.mlb-icon-spacing {
+	margin-left: 10px;
+	/* Adjust the spacing value as needed */
 }
 </style>
