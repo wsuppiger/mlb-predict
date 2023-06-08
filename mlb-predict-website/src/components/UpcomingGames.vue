@@ -22,11 +22,14 @@
 				</router-link>
 			</li>
 		</ul>
+		<div class="loading-icon" v-if="isLoading">
+			<div class="spinner"></div>
+		</div>
 	</div>
 </template>
 
 <script>
-import { db } from '@/firebase';
+import { db, functions } from '@/firebase';
 
 export default {
 	data() {
@@ -64,6 +67,7 @@ export default {
 				'Toronto Blue Jays': '#134A8E',
 				'Washington Nationals': '#AB0003',
 			},
+			isLoading: true, // flag to indicate if games are being loaded
 		};
 	},
 	mounted() {
@@ -72,9 +76,20 @@ export default {
 	methods: {
 		async fetchUpcomingGames() {
 			try {
+				this.isLoading = true; // Set isLoading flag to true
+
 				const snapshot = await db.collection('mlb_games').get();
 				const games = [];
-				snapshot.forEach((doc) => {
+				const today = (new Date()).toLocaleDateString("fr-CA");
+
+				if (snapshot.empty) {
+					// Call the Firebase function to store MLB games for today
+					const storeMlbGamesEndpoint = functions.httpsCallable('store_mlb_games_endpoint');
+					await storeMlbGamesEndpoint({ date: today });
+				}
+
+				const updatedSnapshot = await db.collection('mlb_games').get();
+				updatedSnapshot.forEach((doc) => {
 					const gamesData = doc.data().games;
 					gamesData.forEach((game) => {
 						const { gamePk, gameDate, teams } = game;
@@ -86,7 +101,9 @@ export default {
 				});
 				this.upcomingGames = games;
 			} catch (error) {
-				console.error('Error fetching upcoming games:', error);
+				console.error('Error fetching/updating upcoming games:', error);
+			} finally {
+				this.isLoading = false; // Set isLoading flag to false when done loading
 			}
 		},
 		formatTime(date) {
@@ -188,5 +205,30 @@ export default {
 .mlb-predict-button:active {
 	outline: none;
 	box-shadow: none;
+}
+
+.loading-icon {
+	text-align: center;
+	margin-top: 20px;
+}
+
+.spinner {
+	display: inline-block;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	border: 4px solid #ccc;
+	border-top-color: #333;
+	animation: spin 1s infinite ease-in-out;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
 }
 </style>

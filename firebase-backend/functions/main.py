@@ -1,12 +1,15 @@
 import requests
 from datetime import datetime, date
-from firebase_admin import firestore, initialize_app
+from flask import jsonify, make_response
+from firebase_admin import firestore, initialize_app, credentials
 from firebase_functions import scheduler_fn, https_fn, options
 
 options.set_global_options(max_instances=10)
 
 # Initialize the Firebase app
-initialize_app()
+cred = credentials.ApplicationDefault()
+initialize_app(cred, {'projectId': 'mlb-predict-19054'})
+
 
 def extract_mlb_games(date):
     # Generate the MLB games API URL for the specified date
@@ -21,7 +24,7 @@ def extract_mlb_games(date):
 
     return games
 
-def store_mlb_games(date_str: str) -> None:
+def store_mlb_games(date_str: str):
     # Convert the date string to a datetime object
     date = datetime.strptime(date_str, "%Y-%m-%d").date()
 
@@ -48,26 +51,15 @@ def store_mlb_games(date_str: str) -> None:
     # Log the completion of the task
     print(f"MLB games data stored in Firestore for date: {date_str}")
 
-@https_fn.on_request()
-def store_mlb_games_endpoint(request) -> https_fn.Response:
+    return jsonify({"message": "MLB games data stored successfully"})
+
+@https_fn.on_call()
+def store_mlb_games_endpoint(request: https_fn.CallableRequest) -> https_fn.Response:
+
     # Get the date parameter from the request query string
-    date_str = request.args.get("date")
+    date_str = request.data['date']
     
     # Call the store_mlb_games function with the provided date
     store_mlb_games(date_str)
 
     return ""
-
-@scheduler_fn.on_schedule(schedule="every day 3:00")
-def store_mlb_games_daily(event: scheduler_fn.ScheduledEvent) -> None:
-    # Get the current date
-    current_date = date.today()
-
-    # Convert the date to string format
-    date_str = current_date.strftime("%Y-%m-%d")
-    
-    # Call the store_mlb_games function with the provided date
-    store_mlb_games(date_str)
-
-    return ""
-    
