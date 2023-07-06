@@ -3,7 +3,7 @@
 		<h2 class="mlb-heading">Today's MLB Games</h2>
 		<ul class="mlb-games-list">
 			<li v-for="game in upcomingGames" :key="game.gamePk" class="mlb-game">
-				<router-link :to="'/predict-game/' + game.gamePk" class="mlb-game-link">
+				<router-link :to="'/predict-game/' + today + '/' + game.gamePk" class="mlb-game-link">
 					<div :class="['mlb-game-row', { 'live-game': game.status === 'Live' }]">
 						<div class="mlb-team-container">
 							<span class="mlb-team mlb-home-team" :style="{ backgroundColor: getTeamColor(game.homeTeam) }">
@@ -22,52 +22,24 @@
 				</router-link>
 			</li>
 		</ul>
-		<div class="loading-icon" v-if="isLoading">
-			<div class="spinner"></div>
-		</div>
+		<loading-icon :is-loading="isLoading" />
 	</div>
 </template>
 
 <script>
 import { db, functions } from '@/firebase';
+import getTeamColor from '@/teamColors.js';
+import LoadingIcon from '@/components/LoadingIcon.vue';
 
 export default {
+	components: {
+		LoadingIcon
+	},
 	data() {
 		return {
 			upcomingGames: [],
-			teamColors: {
-				'Arizona Diamondbacks': '#A71930',
-				'Atlanta Braves': '#CE1141',
-				'Baltimore Orioles': '#DF4601',
-				'Boston Red Sox': '#BD3039',
-				'Chicago White Sox': '#27251F',
-				'Chicago Cubs': '#0E3386',
-				'Cincinnati Reds': '#C6011F',
-				'Cleveland Guardians': '#0C2340',
-				'Colorado Rockies': '#33006F',
-				'Detroit Tigers': '#0C2340',
-				'Houston Astros': '#002D62',
-				'Kansas City Royals': '#004687',
-				'Los Angeles Angels': '#BA0021',
-				'Los Angeles Dodgers': '#005A9C',
-				'Miami Marlins': '#00A3E0',
-				'Milwaukee Brewers': '#12284B',
-				'Minnesota Twins': '#002B5C',
-				'New York Yankees': '#003087',
-				'New York Mets': '#FF5910',
-				'Oakland Athletics': '#003831',
-				'Philadelphia Phillies': '#E81828',
-				'Pittsburgh Pirates': '#FDB827',
-				'San Diego Padres': '#002D62',
-				'San Francisco Giants': '#FD5A1E',
-				'Seattle Mariners': '#0C2C56',
-				'St. Louis Cardinals': '#C41E3A',
-				'Tampa Bay Rays': '#092C5C',
-				'Texas Rangers': '#C0111F',
-				'Toronto Blue Jays': '#134A8E',
-				'Washington Nationals': '#AB0003',
-			},
 			isLoading: true, // flag to indicate if games are being loaded
+			today: new Date().toLocaleDateString("fr-CA"),
 		};
 	},
 	mounted() {
@@ -78,24 +50,27 @@ export default {
 			try {
 				this.isLoading = true; // Set isLoading flag to true
 
-				const snapshot = await db.collection('mlb_games').get();
+				const today = this.today;
+				const snapshot = await db.collection('mlb_games').doc(today).get();
 				const games = [];
-				const today = new Date().toLocaleDateString("fr-CA");
 
-				if (snapshot.empty) {
+				if (!snapshot.exists) {
 					// Call the Firebase function to store MLB games for local today if not stored yet.
 					// This is only for the case where the local time is a day ahead
 					// of the server's schedule (1am EST local, but 10pm PST server)
 					const storeMlbGamesEndpoint = functions.httpsCallable('store_mlb_games_endpoint');
-					await storeMlbGamesEndpoint({ date: today });
+					try {
+						const response = await storeMlbGamesEndpoint({ date: today });
+						console.log(response.data);
+					} catch (error) {
+						console.error(error);
+					}
 				}
 
-				const updatedSnapshot = await db.collection('mlb_games').get();
-				updatedSnapshot.forEach((doc) => {
-					const gamesData = doc.data().games;
-					gamesData.forEach((formattedGame) => {
-						games.push(formattedGame);
-					});
+				const updatedSnapshot = await db.collection('mlb_games').doc(today).get();
+				const gamesData = updatedSnapshot.data().games;
+				gamesData.forEach((formattedGame) => {
+					games.push(formattedGame);
 				});
 				this.upcomingGames = games;
 			} catch (error) {
@@ -108,9 +83,7 @@ export default {
 			const gameDate = new Date(date);
 			return gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 		},
-		getTeamColor(team) {
-			return this.teamColors[team] || '#000000'; // Default color if not found in the teamColors object
-		},
+		getTeamColor,
 	},
 };
 </script>
@@ -203,31 +176,6 @@ export default {
 .mlb-predict-button:active {
 	outline: none;
 	box-shadow: none;
-}
-
-.loading-icon {
-	text-align: center;
-	margin-top: 20px;
-}
-
-.spinner {
-	display: inline-block;
-	width: 40px;
-	height: 40px;
-	border-radius: 50%;
-	border: 4px solid #ccc;
-	border-top-color: #333;
-	animation: spin 1s infinite ease-in-out;
-}
-
-@keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-
-	100% {
-		transform: rotate(360deg);
-	}
 }
 
 .live-game {

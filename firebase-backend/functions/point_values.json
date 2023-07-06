@@ -1,0 +1,62 @@
+{
+    "options": {
+        "hit": {
+            "suboptions": ["single", "double", "triple", "homerun"],
+            "points": 100
+        },
+        "out": {
+            "suboptions": ["strikeout", "groundout", "DP", "flyout"],
+            "points": 15
+        },
+        "other": {
+            "suboptions": ["walk", "error", "HBP"],
+            "points": 100
+        }
+    },
+    "suboptions": {
+        "single": {
+            "events": ["Single"],
+            "points": 40
+        },
+        "double": {
+            "events": ["Double"],
+            "points": 125
+        },
+        "triple": {
+            "events": ["Triple"],
+            "points": 500
+        },
+        "homerun": {
+            "events": ["Home Run"],
+            "points": 250
+        },
+        "strikeout": {
+            "events": ["Strikeout"],
+            "points": 40
+        },
+        "groundout": {
+            "events": ["Groundout", "Forceout", "Bunt Sac Bunt"],
+            "points": 35
+        },
+        "DP": {
+            "events": ["Grounded Into DP", "Double Play"],
+            "points": 70
+        },
+        "flyout": {
+            "events": ["Pop Out", "Flyout", "Lineout", "Sac Fly", "Fielders Choice", "Fielders Choice Out"],
+            "points": 40
+        },
+        "walk": {
+            "events": ["Walk"],
+            "points": 100
+        },
+        "error": {
+            "events": ["Field Error"],
+            "points": 500
+        },
+        "HBP": {
+            "events": ["Hit By Pitch"],
+            "points": 500
+        }
+    }
+}

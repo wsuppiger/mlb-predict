@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import AboutView from '../views/AboutView.vue'
 import PredictGameView from '../views/PredictGameView.vue'
 
 const routes = [{
@@ -8,7 +9,12 @@ const routes = [{
   component: HomeView
 },
 {
-  path: '/predict-game/:gamepk',
+  path: '/about',
+  name: 'About',
+  component: AboutView
+},
+{
+  path: '/predict-game/:date/:gamePk',
   name: 'Predict Game',
   // component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   component: PredictGameView
