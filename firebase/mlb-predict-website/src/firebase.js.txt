@@ -1,0 +1,38 @@
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
+import 'firebase/compat/auth';
+import 'firebase/compat/functions';
+
+// Initialize Firebase app with your configuration
+firebase.initializeApp({
+  // Your Firebase configuration
+});
+
+const db = firebase.firestore();
+const auth = firebase.auth();
+const functions = firebase.functions();
+
+// Use the Firestore emulator when running in the localhost environment
+// eslint-disable-next-line no-restricted-globals
+if (location.hostname === 'localhost') {
+  db.useEmulator('localhost', 8080);
+  functions.useEmulator('localhost', 5001);
+  auth.useEmulator('http://localhost:9099/', { disableWarnings: true });
+}
+
+// Export the Firebase modules
+export { db, auth, functions };
+
+// Export the Firebase authentication instance
+export const firebaseAuth = firebase.auth;
+
+// Export a function to handle the sign-in process
+export async function signInWithGoogle() {
+  try {
+	 const provider = new firebase.auth.GoogleAuthProvider();
+	 await auth.signInWithPopup(provider);
+	 // Redirect or handle successful sign-in as needed
+  } catch (error) {
+	 console.error('Error signing in:', error);
+  }
+}
