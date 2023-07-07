@@ -104,7 +104,7 @@ export default {
 				strikeout: 40,
 				groundout: 35,
 				flyout: 40,
-				hit: 25,
+				hit: 100,
 				HBP: 500,
 				DP: 70,
 				walk: 100,
