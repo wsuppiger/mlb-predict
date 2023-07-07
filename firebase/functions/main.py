@@ -2,6 +2,8 @@ import json
 import logging
 import threading
 import time
+from datetime import datetime
+import pytz
 from typing import List
 import requests
 from datetime import datetime, date
@@ -42,7 +44,7 @@ def extract_mlb_games(date):
     url = f"https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate={date}&endDate={date}&gameType=R&fields=dates,date,games,gamePk,status,abstractGameState,teams,away,home,team,id,name,gameDate"
 
     # Send a GET request to the MLB API
-    response = requests.get(url)
+    response = requests.get(url, verify=False)
     data = response.json()
 
     # Extract the games data
@@ -77,7 +79,8 @@ def extract_mlb_games(date):
 
 def store_or_update_mlb_games(date_str: str):
     # Convert the date string to a datetime object
-    date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    pst = pytz.timezone("US/Pacific")
+    date = datetime.now(pytz.utc).astimezone(pst).date()
 
     # Extract the MLB games data
     games = extract_mlb_games(date)
@@ -98,7 +101,7 @@ def store_or_update_mlb_games(date_str: str):
     live_games = [game.get("gamePk") for game in games if game.get("status") == "Live"]
 
     # Update the live games list
-    game_live_ref.set({"live_games": live_games})
+    game_live_ref.set({"live_games": live_games}, merge=True)
 
     # Log the completion of the task
     logger.info(f"MLB games data stored in Firestore for date: {date_str}")
@@ -131,7 +134,7 @@ def heartbeat_scheduled(event: scheduler_fn.ScheduledEvent) -> None:
 def fetch_play_data(gamepk):
     url = f"https://statsapi.mlb.com/api/v1.1/game/{gamepk}/feed/live"
 
-    response = requests.get(url)
+    response = requests.get(url, verify=False)
     data = response.json()
 
     play = data.get("liveData", {}).get("plays", {}).get("currentPlay", {})
@@ -244,11 +247,14 @@ def process_play_data(gamepks: List[int], iterations: int, delay: int) -> None:
 
             ab_index = str(play_data.get("live", {}).get("atBatIndex"))
             if current_ab_index is None or current_ab_index != ab_index:
-                ten_secs_from_now = int(time.time() + DECISION_SECS) * 1000
+                decision_secs_from_now = int(time.time() + DECISION_SECS) * 1000
                 # handle case where first request is sent so no one can make a decision
                 if current_ab_index is None:
-                    ten_secs_from_now = 0
-                at_bat_ref.set({"index": ab_index, "decisionTime": ten_secs_from_now})
+                    decision_secs_from_now = 0
+                at_bat_ref.set(
+                    {"index": ab_index, "decisionTime": decision_secs_from_now},
+                    merge=True,
+                )
 
         time.sleep(delay)
 
