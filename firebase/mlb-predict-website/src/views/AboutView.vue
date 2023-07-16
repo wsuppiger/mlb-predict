@@ -13,7 +13,8 @@
       <p>
         On the <router-link to="/">home page</router-link>, select any MLB game scheduled for today and log in with your
         Google account to get started. Once you're in the game, choose the play for the next at bat under <strong>"Predict
-          Play"</strong>. Remember, you have 10 seconds to make your selection, so be quick! Make sure to choose one of
+          Play"</strong>. Remember, you have about 10 seconds to make your selection, so be quick! Make sure to choose one
+        of
         the options: <strong>"hit"</strong>, <strong>"out"</strong>, or <strong>"other"</strong> and one of their
         respective sub-options. Note that just selecting the main option without a sub-option will not submit your pick.
       </p>
@@ -33,7 +34,7 @@
     <div class="section">
       <h2>Live Data</h2>
       <p>
-        The live data section fetches updates every 10 seconds from the unofficial MLB.com API. Please note that there
+        The live data section fetches updates every 6 seconds from the unofficial MLB.com API. Please note that there
         might be occasional outages or mistakes due to the data source. Rest assured, the same data is used to calculate
         scores.
       </p>

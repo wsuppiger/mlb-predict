@@ -8,7 +8,7 @@ MLB Predict is a free game where users can pick the result of an upcoming at bat
 2. Select any MLB game scheduled for today.
 3. Log in with your Google account.
 4. Once you're in the game, choose the play for the next at bat under "Predict Play".
-5. You have 10 seconds to make your selection. Choose one of the options: "hit", "out", or "other", and one of their respective sub-options. Note that just selecting the main option without a sub-option will not submit your pick.
+5. You have 12 seconds to make your selection. Choose one of the options: "hit", "out", or "other", and one of their respective sub-options. Note that just selecting the main option without a sub-option will not submit your pick.
 
 ## Scoring
 
@@ -16,7 +16,7 @@ As you can see next to each option under "Predict Play", you will be rewarded po
 
 ## Live Data
 
-The live data section fetches updates every 10 seconds from the unofficial MLB.com API. Please note that there might be occasional outages or mistakes due to the data source. Rest assured, the same data is used to calculate scores.
+The live data section fetches updates every 6 seconds from the unofficial MLB.com API. Please note that there might be occasional outages or mistakes due to the data source. Rest assured, the same data is used to calculate scores.
 
 ## Recommendations
 
