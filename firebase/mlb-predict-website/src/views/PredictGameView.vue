@@ -48,7 +48,7 @@
                     <div class="count-item">
                       <span class="count-label">O:</span>
                       <div class="dots">
-                        <div class="dot" v-for="n in 2" :key="n" :class="{ active: n <= liveData.live.count.outs }"></div>
+                        <div class="dot" v-for="n in 3" :key="n" :class="{ active: n <= liveData.live.count.outs }"></div>
                       </div>
                     </div>
                     <div class="count-item">

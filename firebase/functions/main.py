@@ -15,11 +15,13 @@ from firebase_functions.firestore_fn import (
     Event,
     DocumentSnapshot,
 )
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 options.set_global_options(max_instances=10, timeout_sec=350)
 
-HB_ITERATIONS, HB_DELAY = 30, 10
-DECISION_SECS = 10
+HB_ITERATIONS, HB_DELAY = 50, 6
+DECISION_SECS = 12
 
 logging.basicConfig(
     level=logging.INFO,
@@ -278,7 +280,7 @@ def make_play_pick(request: https_fn.CallableRequest) -> https_fn.Response:
     if now > current_decision_time:
         return {
             "success": False,
-            "message": 'Your prediction was submitted too late.  Watch for the gray timer under "Predict Play", and make the pick before it expires.',
+            "message": 'Your prediction was submitted too late.  Watch for the gray timer under "Predict Play" and enable audio notifications.',
         }
 
     # Access Firestore

@@ -1,5 +1,12 @@
 <template>
 	<div class="live-info">
+		<div>
+			<b-form-checkbox v-model="isAudioEnabled" name="check-button" class="audio-notification-toggle"
+				:style="{ backgroundColor: isAudioEnabled ? '#ccc' : '', borderColor: isAudioEnabled ? '#ccc' : '' }" switch>
+				Audio Notification
+			</b-form-checkbox>
+			<audio ref="notificationSound" src="/notification-tone.mp3" autoplay :muted="!isAudioEnabled"></audio>
+		</div>
 		<!-- Display timer -->
 		<div class="timer" :style="{ transitionDuration: transitionDuration, width: timerWidth }"></div>
 
@@ -41,6 +48,7 @@ export default {
 			timerWidth: '100%', // Timer width
 			showAlert: false,
 			alertMessage: '',
+			isAudioEnabled: false,
 		};
 	},
 	props: {
@@ -115,6 +123,7 @@ export default {
 			return `${option} (+${points})`;
 		},
 		calculateAndStartTimer(decisionTime) {
+
 			const now = new Date().getTime();
 			const timoutDelay = 100;
 			const timeRemaining = decisionTime - now - timoutDelay;
@@ -130,6 +139,9 @@ export default {
 			}, timoutDelay);
 		},
 		updateDecisionTime(newDecisionTime) {
+			// Play the notification sound
+			this.$refs.notificationSound.play();
+
 			this.isSelectionMade = false;
 			this.selectedOption = '';
 			this.chosenPlay = '';
